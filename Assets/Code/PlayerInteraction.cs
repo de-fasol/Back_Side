@@ -16,6 +16,7 @@ namespace Code
         private Transform playerTransform;
         private Door currentDoor;
         private RadioController currentRadio;
+        private PickupItem currentPickup;
         private GameObject currentTarget;
         private GameObject activePopup;
     
@@ -30,29 +31,48 @@ namespace Code
     
         void Update()
         {
-            // Поиск объектов через луч из центра камеры
             FindByRaycast();
         }
     
         void FindByRaycast()
         {
             Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-            RaycastHit hit;
-        
-            if (Physics.Raycast(ray, out hit, interactionRange))
+
+            if (Physics.Raycast(ray, out var hit, interactionRange))
             {
-                // Проверка на дверь
+                // ПРОВЕРКА НА ПРЕДМЕТ
+                PickupItem pickup = hit.collider.GetComponent<PickupItem>();
+                if (pickup != null && pickup.CanPickup())
+                {
+                    if (currentTarget != pickup.gameObject)
+                    {
+                        ClearAll();
+                        currentTarget = pickup.gameObject;
+                        currentPickup = pickup;
+                        ShowPickupPopup();
+                    }
+                
+                    if (Input.GetKeyDown(interactKey))
+                    {
+                        currentPickup.Pickup();
+                        HidePopup();
+                        currentTarget = null;
+                        currentPickup = null;
+                    }
+                    return;
+                }
+            
+                // ПРОВЕРКА НА ДВЕРЬ
                 Door door = hit.collider.GetComponent<Door>();
                 if (door != null)
                 {
                     if (currentTarget != door.gameObject)
                     {
-                        ClearHighlight();
+                        ClearAll();
                         currentTarget = door.gameObject;
                         currentDoor = door;
-                        currentRadio = null;
                         currentDoor.SetHighlight(true);
-                        ShowPopupForDoor();  // Показываем попап (без таймера)
+                        ShowDoorPopup();
                     }
                 
                     if (Input.GetKeyDown(interactKey))
@@ -60,57 +80,52 @@ namespace Code
                         currentDoor.Interact();
                         ShowTemporaryPopup(currentDoor.IsLocked() ? "🔒 Дверь заперта!" : 
                             currentDoor.IsOpen() ? "🚪 Дверь открыта" : "🚪 Дверь закрыта", 1f);
-                        // Обновляем попап после взаимодействия
-                        ShowPopupForDoor();
+                        ShowDoorPopup();
                     }
                     return;
                 }
             
-                // Проверка на радио
+                // ПРОВЕРКА НА РАДИО
                 RadioController radio = hit.collider.GetComponent<RadioController>();
                 if (radio != null)
                 {
                     if (currentTarget != radio.gameObject)
                     {
-                        ClearHighlight();
+                        ClearAll();
                         currentTarget = radio.gameObject;
                         currentRadio = radio;
-                        currentDoor = null;
                         currentRadio.SetHighlight(true);
-                        ShowPopupForRadio();  // Показываем попап (без таймера)
+                        ShowRadioPopup();
                     }
                 
                     if (Input.GetKeyDown(interactKey))
                     {
                         currentRadio.ToggleRadio();
                         ShowTemporaryPopup(currentRadio.IsOn() ? "🎵 Радио включено" : "🔇 Радио выключено", 1f);
-                        // Обновляем попап после взаимодействия
-                        ShowPopupForRadio();
+                        ShowRadioPopup();
                     }
                     return;
                 }
             }
         
-            // Если не смотрим ни на что - убираем всё
             if (currentTarget != null)
             {
-                ClearHighlight();
+                ClearAll();
                 currentTarget = null;
                 currentDoor = null;
                 currentRadio = null;
+                currentPickup = null;
                 HidePopup();
             }
         }
     
-        void ShowPopupForDoor()
+        void ShowDoorPopup()
         {
             if (interactionPopupPrefab == null) return;
         
-            // Удаляем старый попап
             if (activePopup != null)
                 Destroy(activePopup);
         
-            // Создаём новый
             activePopup = Instantiate(interactionPopupPrefab, playerTransform.position + popupOffset, Quaternion.identity);
             var popupText = activePopup.GetComponentInChildren<UnityEngine.UI.Text>();
             if (popupText != null)
@@ -122,18 +137,15 @@ namespace Code
                 else
                     popupText.text = "🚪 Нажмите E чтобы открыть";
             }
-            // НЕТ ТАЙМЕРА! Попап будет висеть, пока смотрим на дверь
         }
     
-        void ShowPopupForRadio()
+        void ShowRadioPopup()
         {
             if (interactionPopupPrefab == null) return;
         
-            // Удаляем старый попап
             if (activePopup != null)
                 Destroy(activePopup);
         
-            // Создаём новый
             activePopup = Instantiate(interactionPopupPrefab, playerTransform.position + popupOffset, Quaternion.identity);
             var popupText = activePopup.GetComponentInChildren<UnityEngine.UI.Text>();
             if (popupText != null)
@@ -143,7 +155,21 @@ namespace Code
                 else
                     popupText.text = "📻 Нажмите E чтобы включить";
             }
-            // НЕТ ТАЙМЕРА! Попап будет висеть, пока смотрим на радио
+        }
+    
+        void ShowPickupPopup()
+        {
+            if (interactionPopupPrefab == null) return;
+        
+            if (activePopup != null)
+                Destroy(activePopup);
+        
+            activePopup = Instantiate(interactionPopupPrefab, playerTransform.position + popupOffset, Quaternion.identity);
+            var popupText = activePopup.GetComponentInChildren<UnityEngine.UI.Text>();
+            if (popupText != null)
+            {
+                popupText.text = "📦 Нажмите E чтобы подобрать";
+            }
         }
     
         void ShowTemporaryPopup(string message, float duration)
@@ -167,7 +193,7 @@ namespace Code
             }
         }
     
-        void ClearHighlight()
+        void ClearAll()
         {
             if (currentDoor != null)
                 currentDoor.SetHighlight(false);
