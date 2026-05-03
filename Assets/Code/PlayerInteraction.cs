@@ -199,6 +199,7 @@ namespace Code
                 currentDoor.SetHighlight(false);
             if (currentRadio != null)
                 currentRadio.SetHighlight(false);
+            // Для PickupItem подсветка не требуется, так как она и так пропадает
         }
     
         void OnDrawGizmos()
@@ -208,6 +209,10 @@ namespace Code
                 Gizmos.color = Color.red;
                 Vector3 rayEnd = playerCamera.transform.position + playerCamera.transform.forward * interactionRange;
                 Gizmos.DrawLine(playerCamera.transform.position, rayEnd);
+                
+                // Рисуем сферу радиуса взаимодействия
+                Gizmos.color = new Color(1, 0, 0, 0.2f);
+                Gizmos.DrawWireSphere(playerCamera.transform.position, interactionRange);
             }
         }
     }

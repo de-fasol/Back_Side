@@ -6,7 +6,13 @@ namespace Code
     {
         [Header("Настройки подбора")]
         [SerializeField] private string itemName = "Предмет";
-    
+        
+        [Header("Настройки взаимодействия")]
+        [SerializeField] private Transform interactionCenter;
+        [SerializeField] private float interactionRadius = 2f;
+        [SerializeField] private bool useRaycast = true;      // Использовать луч
+        [SerializeField] private bool useRadius = true;       // Использовать радиус
+        [SerializeField] private bool showGizmo = true;
 
         public enum PickupActionType
         {
@@ -18,24 +24,22 @@ namespace Code
     
         [SerializeField] private PickupActionType actionType = PickupActionType.ToggleArrays;
     
-
         public enum ArrayMode
         {
-            OneTimeEnable,     // ОДИН РАЗ: включить один массив, выключить другой
-            ToggleMode         // ПЕРЕКЛЮЧАТЕЛЬ: один массив вкл/выкл при каждом подборе
+            OneTimeEnable,
+            ToggleMode
         }
     
         [SerializeField] private ArrayMode arrayMode = ArrayMode.OneTimeEnable;
     
-        [Header("Режим: OneTimeEnable (включить/выключить разные массивы)")]
+        [Header("Режим: OneTimeEnable")]
         [SerializeField] private GameObject[] arrayToEnable;
         [SerializeField] private GameObject[] arrayToDisable;
     
-        [Header("Режим: ToggleMode (переключать один массив)")]
+        [Header("Режим: ToggleMode")]
         [SerializeField] private GameObject[] arrayToToggle;
         [SerializeField] private bool startState = false;
     
-
         public enum PickupDestroyType
         {
             Destroy,
@@ -53,9 +57,9 @@ namespace Code
         [SerializeField] private float fadeDuration = 1f;
     
         [Header("Звуки")]
-        [SerializeField] private AudioClip pickupSound;           // Обычный звук подбора
-        [SerializeField] private AudioClip toggleOnSound;        // Звук ВКЛЮЧЕНИЯ (ToggleMode)
-        [SerializeField] private AudioClip toggleOffSound;       // Звук ВЫКЛЮЧЕНИЯ (ToggleMode)
+        [SerializeField] private AudioClip pickupSound;
+        [SerializeField] private AudioClip toggleOnSound;
+        [SerializeField] private AudioClip toggleOffSound;
         [SerializeField] private float soundVolume = 0.5f;
     
         [Header("Визуальные эффекты")]
@@ -88,12 +92,81 @@ namespace Code
         
             originalPosition = transform.position;
             originalRotation = transform.rotation;
+            
+            if (interactionCenter == null)
+            {
+                GameObject center = new GameObject("InteractionCenter");
+                center.transform.SetParent(transform);
+                center.transform.localPosition = Vector3.zero;
+                interactionCenter = center.transform;
+            }
         
             isToggleState = startState;
             if (arrayMode == ArrayMode.ToggleMode)
             {
                 SetArraysToggleState(isToggleState);
             }
+        }
+    
+        /// <summary>
+        /// Проверка, смотрит ли игрок на предмет (через луч)
+        /// </summary>
+        public bool IsPlayerLooking(Transform playerCamera)
+        {
+            if (playerCamera == null) return false;
+            if (!useRaycast) return false;
+            
+            Ray ray = new Ray(playerCamera.position, playerCamera.forward);
+            RaycastHit hit;
+            
+            if (Physics.Raycast(ray, out hit, interactionRadius))
+            {
+                // Проверяем, попали ли в этот предмет или его дочерние объекты
+                if (hit.collider.gameObject == gameObject || hit.collider.transform.IsChildOf(transform))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    
+        /// <summary>
+        /// Проверка, находится ли игрок в зоне взаимодействия (через радиус)
+        /// </summary>
+        public bool IsPlayerInRange(Transform playerTransform)
+        {
+            if (playerTransform == null) return false;
+            if (!useRadius) return false;
+            
+            float distance = Vector3.Distance(interactionCenter.position, playerTransform.position);
+            return distance <= interactionRadius;
+        }
+        
+        /// <summary>
+        /// Комбинированная проверка: луч ИЛИ радиус
+        /// </summary>
+        public bool CanInteract(Transform playerCamera, Transform playerTransform)
+        {
+            bool looking = useRaycast && IsPlayerLooking(playerCamera);
+            bool inRange = useRadius && IsPlayerInRange(playerTransform);
+            
+            return looking || inRange;
+        }
+        
+        public float GetDistanceToPlayer(Transform playerTransform)
+        {
+            if (playerTransform == null) return Mathf.Infinity;
+            return Vector3.Distance(interactionCenter.position, playerTransform.position);
+        }
+        
+        public Transform GetInteractionCenter()
+        {
+            return interactionCenter;
+        }
+        
+        public float GetInteractionRadius()
+        {
+            return interactionRadius;
         }
     
         public void Pickup()
@@ -158,11 +231,9 @@ namespace Code
     
         void ToggleMode()
         {
-            // Переключаем состояние
             isToggleState = !isToggleState;
             SetArraysToggleState(isToggleState);
         
-            // Воспроизводим РАЗНЫЕ звуки для включения и выключения
             if (isToggleState)
             {
                 PlaySound(toggleOnSound);
@@ -283,8 +354,26 @@ namespace Code
     
         void OnDrawGizmosSelected()
         {
-            Gizmos.color = arrayMode == ArrayMode.ToggleMode ? Color.cyan : Color.green;
-            Gizmos.DrawWireSphere(transform.position, 2f);
+            if (!showGizmo) return;
+            
+            if (interactionCenter != null)
+            {
+                // Рисуем центр (красная точка)
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireSphere(interactionCenter.position, 0.1f);
+                
+                // Рисуем радиус (зелёная/синяя сфера)
+                Gizmos.color = arrayMode == ArrayMode.ToggleMode ? Color.cyan : Color.green;
+                Gizmos.DrawWireSphere(interactionCenter.position, interactionRadius);
+                
+                // Рисуем луч (жёлтая линия) если используется raycast
+                if (useRaycast)
+                {
+                    Gizmos.color = Color.yellow;
+                    Vector3 rayEnd = interactionCenter.position + interactionCenter.forward * interactionRadius;
+                    Gizmos.DrawLine(interactionCenter.position, rayEnd);
+                }
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ namespace Code
     
         [Header("Звук")]
         [SerializeField] private AudioClip introSound;
+        [SerializeField] private float soundVolume = 0.7f;  // Громкость звука (0-1)
     
         [Header("Настройки")]
         [SerializeField] private float fadeInDuration = 2f;
@@ -24,6 +25,7 @@ namespace Code
         {
             audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
+            audioSource.volume = soundVolume;  // Устанавливаем громкость
         
             // Изначально экран черный
             fadePanel.color = Color.black;
@@ -67,6 +69,20 @@ namespace Code
         
             // Полностью убираем панель
             fadePanel.gameObject.SetActive(false);
+        }
+        
+        // Публичный метод для изменения громкости (можно вызвать из другого скрипта)
+        public void SetVolume(float volume)
+        {
+            soundVolume = Mathf.Clamp01(volume);
+            if (audioSource != null)
+                audioSource.volume = soundVolume;
+        }
+        
+        // Публичный метод для получения текущей громкости
+        public float GetVolume()
+        {
+            return soundVolume;
         }
     }
 }
