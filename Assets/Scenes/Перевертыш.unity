@@ -14044,7 +14044,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3770344235383425905, guid: 6d1026ca4b5d6f14fb8ac803b9713f18, type: 3}
       propertyPath: m_text
-      value: "________________________\n\n\u25CF \u0414\u043E\u043C?\n________________________"
+      value: "________________________\n\n\u25CF House?\n________________________"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -19996,8 +19996,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3770344235383425905, guid: 6d1026ca4b5d6f14fb8ac803b9713f18, type: 3}
       propertyPath: m_text
-      value: "________________________\n\n\u25CF \u041F\u043E\u043A\u0438\u043D\u044C\u0442\u0435
-        \u043A\u0432\u0430\u0440\u0442\u0438\u0440\u0443\n________________________"
+      value: "________________________\n\n\u25CF Leave the apartment\n________________________"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -25149,9 +25148,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3770344235383425905, guid: 6d1026ca4b5d6f14fb8ac803b9713f18, type: 3}
       propertyPath: m_text
-      value: "________________________\n\n\u25CF  \u041F\u0435\u0440\u0435\u0434
-        \u0441\u043D\u043E\u043C \u043D\u0430\u0434\u043E \u0443\u043C\u044B\u0442\u044C\u0441\u044F
-        \n________________________"
+      value: "________________________\n\n\u25CF  You need to wash your face before
+        going to bed.\n________________________"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -31281,8 +31279,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3770344235383425905, guid: 6d1026ca4b5d6f14fb8ac803b9713f18, type: 3}
       propertyPath: m_text
-      value: "________________________\n\n\u25CF \u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0430\u0439\u0442\u0435
-        \u0438\u0434\u0442\u0438 \u0432\u043F\u0435\u0440\u0435\u0434\n________________________"
+      value: "________________________\n\n\u25CF Keep moving forward\n________________________"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -49691,8 +49688,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3770344235383425905, guid: 6d1026ca4b5d6f14fb8ac803b9713f18, type: 3}
       propertyPath: m_text
-      value: "________________________\n\n\u25CF \u0412\u044B\u043F\u0435\u0439\u0442\u0435
-        \"\u0443\u0441\u043F\u043E\u043A\u043E\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435\"\n________________________"
+      value: "________________________\n\n\u25CF Take a \"sedative\"\n________________________"
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
